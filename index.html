@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>HTML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    Seleccione un video: <input type="file" name="videoSeleccionado" id="videoSeleccionado"
+        onchange="handleFileSelect(event)">
+    <output id="list"></output>
+    <div id="mensaje"></div>
+</body>
+<script>
+    function handleFileSelect(e) {
+        var files = e.target.files;
+        var output = [];
+        var mySpan = document.getElementById('mensaje');
+        for (var i = 0, f; f = files[i]; i++) {
+            if (!f.type.match('video.*')) {
+                mySpan.innerHTML = "El archivo seleccionado no es del tipo correcto.";
+                mySpan.style.color = "red";
+                continue;
+            }
+            mySpan.innerText = "";
+            var reader = new FileReader();
+            reader.onload = (function (theFile) {
+                return function (e) {
+                    var span = document.createElement('span');
+                    span.innerHTML = ['<video controls id="videoSubido" width=”640” height=”480” src="',
+                        e.target.result,
+                        '" title="', escape(theFile.name),
+                        '"/>'].join('');
+                    document.getElementById('list').insertBefore(span, null);
+                    let vid = document.getElementById("videoSubido");
+                    vid.onloadstart = function () {
+                        mySpan.innerHTML = "El video se esta subiendo.";
+                        mySpan.style.color = "green";
+                    };
+                    vid.oncanplay = function () {
+                        mySpan.innerHTML = "Video subido.";
+                        mySpan.style.color = "green";
+                    };
+                };
+            })(f);
+            reader.readAsDataURL(f);
+
+            output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n / a', ') - ', f.size, ' bytes, last modified: ',
+                f.lastModifiedDate.toLocaleDateString(), '</li>');
+        }
+        list.innerHTML = '<ul> Archivo subido: ' + output.join('') + '</ul>';
+    }
+    document.getElementById('files').addEventListener('change',
+        handleFileSelect, false);
+</script>
+
+</html>
